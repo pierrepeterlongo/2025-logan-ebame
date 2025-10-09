@@ -12,7 +12,7 @@ Logan Search lets you search up to **1 kb** of DNA/RNA and instantly identifies 
 |------|-----------------|---------|
 | Web browser & email | Submit queries + receive result links | Any modern browser |
 | *Optional* `aws` CLI | Fetch assemblies for the hits | See Part A or `aws help` |
-| *Optional* `parallel`, `seqkit` | Batch downloads & sequence fiddling | `GitHub`, `brew`, `apt`, etc. |
+| *Optional* `parallel`, `seqkit` | Batch downloads & sequence fiddling |  |
 
 ---
 
@@ -57,9 +57,9 @@ TGGAAAAAGAGGCAACAGCTTTGCGAGCATCTACTTTTTATTCTCCCTTATCTGCTTGACTGCTATTTAACTCTTCACCA
 2. Click **“Query the planet”** (upper‑right).  
 3. Under **Input**, choose **Text** (paste) *or* **File** (upload) and provide your sequence.  
 4. *(Optional)* adjust the sidebar settings (see table below).  
-5. Hit **Submit**. Wait about 5 minutes.
 
-**Pro tip**: search `All no viral` instead of `all` groups for faster search. (Because search scales with number of SRA runs, and there are a lot of Covid19 runs.)
+5. Choose groups in which you want to search. **Pro tip** search `All no viral` instead of `all` groups for faster search. (Because search scales with number of SRA runs, and there are a lot of Covid19 runs.)
+6. Hit **Submit**. Wait about 5 minutes.
 
 ### Sidebar settings
 
@@ -81,7 +81,11 @@ TGGAAAAAGAGGCAACAGCTTTGCGAGCATCTACTTTTTATTCTCCCTTATCTGCTTGACTGCTATTTAACTCTTCACCA
 
 Once Logan Search has finished searching (takes about 5 minutes), browse through the results webpage, and take a look at the map and plots!
 
+### Table 
+
 The first tab, "Table", show the list of SRA accessions where the query sequence is present. 
+
+(non-contractual images) 
 
 ![image](assets/logan_list.png)
 
@@ -95,7 +99,9 @@ Key columns are:
 * `location_*`: stats about experiments that fall in the same geographical location
 * All the other columns are from the [SRA metadata](https://www.ncbi.nlm.nih.gov/sra/docs/sra-cloud-based-metadata-table/)
 
+Take some time to explore the kind of information you may grab from these data.
 
+### Map
 
 The next tab, "Map", shows the location of SRA samples according to ther geolocalization metadata provided by the data submitters.
 
@@ -116,6 +122,8 @@ The color of the circles correspond to `kmer_coverage`, and the size of the circ
 
 </p>
 </details>
+
+### Plots
 
 The next tab, "Plots", shows various (~infinite possibilities) plots for the metadata!
 
@@ -140,6 +148,7 @@ Hops. Check the IA generated sumary:
 
 </p>
 </details>
+
 **Q3.** Where is it mostly found?
 
 <details><summary>Answer:</summary>
@@ -171,7 +180,8 @@ Filtering the *Table* using any criterion, also filters concidered accessions fo
 </p>
 </details>
 
-## 4. Get a BLAST-like alignment
+### BLAST-like alignment
+
 
 Logan Search main results table does not return alignments, instead, it just returns "similarity" of your query sequence with each accession. Think of it as "how likely is the sequence present in that accession", or, "how similar is the query sequence to the sequence present in the accession", although both statements are not strictly true.
 
@@ -191,7 +201,7 @@ Filter the table, normaly, only accession SRR10076195 remains
 </details>
 
 
-**Q5.** How many search results?
+**Q6.** How many search results?
 
 
 <details><summary>Answer:</summary>
@@ -202,7 +212,7 @@ Filter the table, normaly, only accession SRR10076195 remains
 </p>
 </details>
 
-**Q6.** Is the query sequence fully contained in the contig?
+**Q7.** Is the query sequence fully contained in the contig?
 
 
 <details><summary>Answer:</summary>
@@ -213,7 +223,7 @@ Nope
 </p>
 </details>
 
-**Q7.** Is the query sequence exactly present in the **unitigs**, or are there mismatches?
+**Q8.** Is the query sequence exactly present in the **unitigs**, or are there mismatches?
 
 
 <details><summary>Answer:</summary>
@@ -226,7 +236,7 @@ There are mismatches
 </p>
 </details>
 
-**Q8** In case there are some mismatches, how is it possible for accessions having 100% similarity with the query?
+**Q9** In case there are some mismatches, how is it possible for accessions having 100% similarity with the query?
 
 
 
@@ -239,7 +249,7 @@ There are mismatches
 </p>
 </details>
 
-## 5 . Retrieve Your Results
+## 4 . Retrieve Your Results
 
 The confirmation e‑mail contains also a link for downloading the results. Let us try this feature.
 
@@ -262,7 +272,7 @@ Then use a kmviz instance is now running at `http://localhost:8050/dashboard`
 
 ---
 
-## 6 . Download Assemblies for the Hits
+## 5 . Download Assemblies for the Hits
 
 ```bash
 cut -f1 <queryname>.tsv | tail -n +2 > hits.acc 
@@ -278,7 +288,7 @@ You now have contigs ready for alignment, variant calling, or pangenome analysis
 ---
 
 
-## 7 . Troubleshooting
+## 6 . Troubleshooting
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
@@ -289,7 +299,7 @@ You now have contigs ready for alignment, variant calling, or pangenome analysis
 
 ---
 
-## 8 . Next Steps
+## 7 . Next Steps
 
 * **Variant scanning:** align all retrieved contigs to a reference.  
 * **Phylogenetics:** build a tree from sequences extracted from the matched runs. 
@@ -307,6 +317,3 @@ You now have contigs ready for alignment, variant calling, or pangenome analysis
 
 You’ve just queried **every** public sequencing run on Earth in minutes—welcome to planetary‑scale genomics!
 
-
-
-Now, let's move on to [Part C](PartC.md).
