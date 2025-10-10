@@ -82,7 +82,7 @@ fasterq-dump SRR2584403 --progress
 It will find the location of the SRA file automatically, download it, convert it to FASTQ, and delete it, so that you end up with only the two FASTQ files. We did all the steps above to see what happened behind the scenes.
 
 
-### 1. Accessing SRA data through Logan
+### 2. Accessing SRA data through Logan
 
 [Logan](https://github.com/IndexThePlanet/Logan/) has assembled all SRA data until late 2023, so this run `SRR2584403` is part of Logan. You may download the Logan assembly using this command:
 
@@ -90,10 +90,10 @@ It will find the location of the SRA file automatically, download it, convert it
 aws s3 cp s3://logan-pub/c/SRR2584403/SRR2584403.contigs.fa.zst . --no-sign-request
 ```
 
-In case of `Could not connect to the endpoint URL` error, use instead: 
+In case of `Could not connect to the endpoint URL` error (this is the case on the IFB VMs), use instead: 
 
 ```bash
-wget https://s3.amazonaws.com/logan-pub/c/SRR2584403/SRR2584403.contigs.fa.zst
+curl -LJO https://s3.amazonaws.com/logan-pub/c/SRR2584403/SRR2584403.contigs.fa.zst
 ```
 
 Now you have a FASTA file of the assembly of that run, compressed in Zstandard format.
@@ -123,7 +123,44 @@ Should display:
     -     FASTA   DNA      1,297  4,556,063       31  3,512.8   81,999  32  57  1,015        0  22,171       0       0  50.72
 
 
-### 2. Quick note about bacterial data
+**Q1 . Repeat the same experiment on unitigs for SRR2584403** 
+
+<details><summary>Answer:</summary>
+<p>
+Download untigs: 
+
+```bash
+aws s3 cp s3://logan-pub/u/SRR2584403/SRR2584403.unitigs.fa.zst . --no-sign-request
+```
+
+<details><summary>On IFB VM:</summary>
+<p>
+
+```bash
+curl -LJO https://s3.amazonaws.com/logan-pub/u/SRR2584403/SRR2584403.unitigs.fa.zst
+```
+
+</p>
+</details>
+
+Decompress
+```bash
+zstd -d SRR2584403.unitigs.fa.zst
+```
+
+Quick stats: 
+```bash
+seqkit stats SRR2584403.unitigs.fa -a
+```
+    file                   format  type  num_seqs     sum_len  min_len  avg_len  max_len  Q1  Q2  Q3  sum_gap  N50  N50_num  Q20(%)  Q30(%)  AvgQual  GC(%)  sum_n
+    SRR2584403.unitigs.fa  FASTA   DNA    321,165  15,068,693       31     46.9    3,267  31  32  33        0   33    1,234       0       0        0  42.12      0
+
+
+</p>
+</details>
+
+
+### 3. Quick note about bacterial data
 
 Above we downloaded a small bacterial assembly. But, when it comes to bacterial isolates, it is actually not recommended to use Logan. A better resource is AllTheBacteria: https://allthebacteria.readthedocs.io/en/latest/
 
@@ -135,15 +172,22 @@ Then you can download the AllTheBacteria assembly like this:
 ```bash
 aws s3 cp --no-sign-request s3://allthebacteria-assemblies/SAMN04096045.fa.gz .
 ```
-or 
+
+<details><summary>On IFB VM:</summary>
+<p>
+
 ```bash
-wget https://s3.amazonaws.com//allthebacteria-assemblies/SAMN04096045.fa.gz
+curl -LJO allthebacteria-assemblies.s3.amazonaws.com/SAMN04096045.fa.gz
 ```
+
+</p>
+</details>
+
 then 
 ```bash
 gunzip SAMN04096045.fa.gz
 ```
-And notice that it has improved assembly stats:
+And notice that it has improved assembly stats compared to contigs:
 
 ```bash
 seqkit stats -a  SAMN04096045.fa
@@ -154,9 +198,9 @@ gives:
     SAMN04096045.fa  FASTA   DNA        118  4,544,381      202  38,511.7  348,273  1,034  14,303  46,440        0  110,753       0       0  50.72
 
 
-Notice how the N50 is greater, though the total lengths are about the same.
+Notice how the N50 is greater when compared to unitigs, though the total lengths are about the same.
 
-### 2. Finding many SRA datasets
+### 4. Finding many SRA datasets
 
 Now, downloading a single SRA accession is neat, but what about many many runs? Let us download 100 E.coli assemblies. But how to find the corresponding runs?
 
@@ -166,43 +210,62 @@ A more clever approach is to export a list of [search results](https://www.ncbi.
 
 ![image](https://github.com/user-attachments/assets/b62787f6-1818-4a7b-b751-fca523b70181)
 
+> Note: on a VM, you may download the list by using: 
+    `
+    curl -JO https://trace.ncbi.nlm.nih.gov/Traces/sra-db-be/sra-db-be.cgi?rettype=acclist\&WebEnv=MCID_68e910ac0db90717eb13c917\&query_key=2
+    `
+
+
 And then parse that CSV to get just the accession names:
 ```bash
-    head SraAccList.csv # to inspect
-    grep -v "sra" SraAccList.csv | head -n 100 > ecoli.acc.txt
+head SraAccList.csv # to inspect
+grep -v "sra" SraAccList.csv | head -n 100 > ecoli.acc.txt
 ```
 Now you have in `ecoli.acc.txt` a list of 100 ecoli accessions. Admittedly, they aren't in a random order, so it may not reflect a broad diversity of E. coli genomes.
 This can be mitigated by typing instead:
 ```bash
-    grep -v "sra" SraAccList.csv | shuf | head -n 100 > ecoli.acc.txt
+grep -v "sra" SraAccList.csv | shuf | head -n 100 > ecoli.acc.txt
 ```
 A more advanced version of this section is available as an independent Logan tutorial: https://github.com/IndexThePlanet/Logan/blob/main/SRA_list.md
 
-### 3. Downloading many SRA datasets
+### 5. Downloading many SRA datasets
 
 Now you have a truly random sample of E.coli accessions from the SRA. You could download them one by one:
 ```bash
-    first_acc=$(head -n 1 ecoli.acc.txt)
-    echo $first_acc
-    fasterq-dump $first_acc
+first_acc=$(head -n 1 ecoli.acc.txt)
+echo $first_acc
+fasterq-dump $first_acc
 ```
 and repeat for all the other accessions in the file, e.g. with (but do not run that command):
 ```bash
-    for acc in $(cat ecoli.acc.txt); do 
-        echo $acc; 
-        fasterq-dump $acc; 
-    done
+for acc in $(cat ecoli.acc.txt); do 
+    echo $acc; 
+    fasterq-dump $acc; 
+done
 ```
 
 But doing this is outside the scope of this tutorial, so we won't do that. 
 
 Instead, to download all the Logan assemblies for this list of accessions, type:
 ```bash
-    for acc in $(cat ecoli.acc.txt); do 
-        echo $acc; 
-        aws s3 cp s3://logan-pub/c/$acc/$acc.contigs.fa.zst . --no-sign-request; 
-    done
+for acc in $(cat ecoli.acc.txt); do 
+    echo $acc; 
+    aws s3 cp s3://logan-pub/c/$acc/$acc.contigs.fa.zst . --no-sign-request; 
+done
 ```
+
+<details><summary>On IFB VM:</summary>
+<p>
+
+```bash
+for acc in $(cat ecoli.acc.txt); do 
+    echo $acc; 
+    curl -LJO https://s3.amazonaws.com/logan-pub/c/$acc/$acc.contigs.fa.zst
+done
+```
+
+</p>
+</details>
 
 You do not need to wait for this command to complete, because, how long do you think it will take? Around a few seconds per accession, and we have 100 accessions, so it will take a dozen minutes or so. I suggest that you interrupt it with Control+C. 
 
@@ -222,10 +285,15 @@ Try it, and stop it too with Control+C.
 parallel -j 4 --color  aws s3 cp s3://logan-pub/c/{}/{}.contigs.fa.zst . --no-sign-request ::: `cat ecoli.acc.txt`
 ```
 
+Or, on IFB VMs:
+```bash
+parallel -j 4 --color  curl -LJO https://s3.amazonaws.com/logan-pub/c/{}/{}.contigs.fa.zst ::: `cat ecoli.acc.txt`
+```
+
 </p>
 </details>
 
-### 4. Recap
+### 6. Recap
 
 What have we seen?
 

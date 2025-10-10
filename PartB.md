@@ -12,14 +12,14 @@ Logan Search lets you search up to **1 kb** of DNA/RNA and instantly identifies 
 |------|-----------------|---------|
 | Web browser & email | Submit queries + receive result links | Any modern browser |
 | *Optional* `aws` CLI | Fetch assemblies for the hits | See Part A or `aws help` |
-| *Optional* `parallel`, `seqkit` | Batch downloads & sequence fiddling |  |
+| *Optional* `parallel`, `seqkit` | Batch downloads & sequence fiddling | See Part A |
 
 ---
 
 
 ## 1 . Prepare a Query Sequence
 
-* **Limit:** ≤ 1 000 bp (service cap)  
+* **Limit:** ≤ 1 000 bp 
 * **Formats:** FASTA
 * **Tip:** pick a region *specific* to your organism/gene—avoid conserved rRNA or adapters.
 
@@ -263,7 +263,7 @@ You may extract only the accessions and similarity score:
 cut -f1,2 <queryname>.tsv | tail -n +2 > hits_sim.acc   # skip header
 ```
 
-Use a local version of kmviz for exploiting your results: 
+Use a local version of kmviz for exploiting your results (not for windows users): 
 ```bash
 pip install kmviz
 python -m kmviz app start session --no-seq-tab
@@ -282,6 +282,22 @@ head -n 25 hits.acc | parallel -j4 '
   zstd -d {}.contigs.fa.zst
 '
 ```
+
+<details><summary>On IFB VMs:</summary>
+<p>
+
+```bash
+cut -f1 <queryname>.tsv | tail -n +2 > hits.acc 
+# Fetch the top 25 hits using 4 parallel threads
+head -n 25 hits.acc | parallel -j4 '
+  curl -LJO https://s3.amazonaws.com/logan-pub/c/{}/{}.contigs.fa.zst &&
+  zstd -d {}.contigs.fa.zst
+'
+```
+
+</p>
+</details>
+
 
 You now have contigs ready for alignment, variant calling, or pangenome analysis.
 
@@ -308,12 +324,12 @@ You now have contigs ready for alignment, variant calling, or pangenome analysis
 
 ---
 
-### 🏁 Quick Recap
+## 🏁 Quick Recap
 
 1. Craft ≤ 1 kb sequence.  
 2. Submit on Logan Search, tweak filters, add your e‑mail.  
 3. Explore *kmviz*, download the ZIP.  
 4. Script‑fetch assemblies, and dive into analysis.
 
-You’ve just queried **every** public sequencing run on Earth in minutes—welcome to planetary‑scale genomics!
+You've just queried **every** public sequencing run on Earth in minutes—welcome to planetary‑scale genomics!
 
