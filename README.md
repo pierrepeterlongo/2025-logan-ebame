@@ -5,7 +5,9 @@ This is a practical session where participants will perform themselves sequencin
 
 [Part A: Accessing Logan data ](https://github.com/pierrepeterlongo/2025-logan-ebame/blob/main/PartA.md)
 
-[Part B: Logan Search](https://github.com/pierrepeterlongo/2025-logan-ebame/blob/main/PartB.md)
+[Part B: Logan Search Interface](https://github.com/pierrepeterlongo/2025-logan-ebame/blob/main/PartB.md)
+
+[Part C: Blast on Logan Search results](https://github.com/pierrepeterlongo/2025-logan-ebame/blob/main/PartC.md)
 
 > Note1: this tutorial is addapted from [rchikhi/2025-logan-practical](https://github.com/rchikhi/2025-logan-practical)
 
